@@ -49,11 +49,11 @@ export default function Home() {
         const data = await res.json();
         
         setResults(prev => prev.map(r => 
-          r.id === i ? { ...r, url: data.result || 'Error', confidence: data.confidence || 'LOW' } : r
+          r.id === i ? { ...r, url: data.result || data.error || 'Error', confidence: data.confidence || 'LOW' } : r
         ));
-      } catch (err) {
+      } catch (err: any) {
         setResults(prev => prev.map(r => 
-          r.id === i ? { ...r, url: 'API Error', confidence: 'LOW' } : r
+          r.id === i ? { ...r, url: err.message || 'API Error', confidence: 'LOW' } : r
         ));
       }
     }

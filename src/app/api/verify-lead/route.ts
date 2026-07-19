@@ -80,7 +80,7 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
 
     if (!finalResult) {
       console.error('All keys in the pool failed. Last Error:', lastError);
-      return NextResponse.json({ error: 'All AI APIs failed' }, { status: 500 });
+      return NextResponse.json({ error: `All AI APIs failed. Last error: ${lastError}` }, { status: 500 });
     }
 
     const resultText = finalResult.trim();
@@ -105,12 +105,12 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.5-flash-free', // Free tier model
+      model: 'google/gemini-2.0-flash-exp:free', // Corrected Free tier model for OpenRouter
       messages: [{ role: 'user', content: prompt }],
     })
   });
 
-  if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices[0]?.message?.content || 'NOT FOUND';
 }
@@ -129,7 +129,7 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
     })
   });
 
-  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.candidates[0]?.content?.parts[0]?.text || 'NOT FOUND';
 }
