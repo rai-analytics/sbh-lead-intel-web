@@ -16,7 +16,6 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    // Set initial theme
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
@@ -31,7 +30,7 @@ export default function Home() {
     const initialResults: LeadResult[] = lines.map((line, idx) => ({
       id: idx,
       originalText: line,
-      url: '...',
+      url: 'Analyzing footprints...',
       confidence: 'PENDING'
     }));
     
@@ -40,10 +39,6 @@ export default function Home() {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Basic parsing: Assume comma separated like "Company, Location, Name" or just string
-      // For SBH pipeline we just pass the whole string to Brave search usually, 
-      // but let's pass it as company for the API route.
-      
       try {
         const res = await fetch('/api/verify-lead', {
           method: 'POST',
@@ -83,70 +78,69 @@ export default function Home() {
   return (
     <div className="container">
       <header className="header">
-        <h1>SBH Lead Intelligence</h1>
+        <h1 className="logo">SBH Lead Intel</h1>
         <button className="theme-toggle" onClick={toggleTheme}>
           {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
         </button>
       </header>
 
       <main>
-        <section className="card">
-          <p className="help-text">
-            Paste your leads below (one per line). The AI will search the web and cognitively verify the exact LinkedIn profile of the founder or target person.
-          </p>
+        {/* Command Box */}
+        <section className={`command-box ${isProcessing ? 'processing' : ''}`}>
+          <div className="scanner"></div>
           <textarea 
-            className="textarea" 
-            placeholder="e.g. Wallmantra, New Delhi&#10;Frog Hollow Studio, United States"
+            className="command-input" 
+            placeholder="Initialize Web Crawler...&#10;Paste target leads here (e.g. Wallmantra, New Delhi)"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={isProcessing}
           />
           
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="btn" onClick={handleProcess} disabled={isProcessing || !inputText.trim()}>
-              {isProcessing && <span className="loader"></span>}
-              {isProcessing ? 'Verifying Leads...' : 'Start Verification'}
+          <div className="command-actions">
+            <span className="action-hint">Press verify to initiate multi-node cognitive analysis.</span>
+            <button className="btn-primary" onClick={handleProcess} disabled={isProcessing || !inputText.trim()}>
+              {isProcessing ? 'Scanning Grid...' : 'Verify Targets'}
             </button>
-            
-            {results.length > 0 && !isProcessing && (
-              <button className="btn" onClick={exportCSV} style={{ background: 'var(--success)' }}>
-                📥 Export CSV
-              </button>
-            )}
           </div>
         </section>
 
+        {/* Results Grid */}
         {results.length > 0 && (
-          <section className="card">
-            <table className="results-table">
-              <thead>
-                <tr>
-                  <th>Target Lead</th>
-                  <th>Verified LinkedIn URL</th>
-                  <th>Confidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map(r => (
-                  <tr key={r.id}>
-                    <td>{r.originalText}</td>
-                    <td>
-                      {r.url.startsWith('http') ? (
-                        <a href={r.url} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>
-                          {r.url}
-                        </a>
-                      ) : r.url}
-                    </td>
-                    <td>
-                      <span className={`status-badge status-${r.confidence.toLowerCase()}`}>
-                        {r.confidence}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+          <div style={{ marginTop: '3rem' }}>
+            {!isProcessing && (
+              <div className="export-bar">
+                <button className="btn-secondary" onClick={exportCSV}>
+                  📥 Export CSV Data
+                </button>
+              </div>
+            )}
+            
+            <div className="results-grid">
+              {results.map((r, index) => (
+                <div 
+                  key={r.id} 
+                  className="result-card" 
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="result-info">
+                    <h3>{r.originalText}</h3>
+                    {r.url.startsWith('http') ? (
+                      <a href={r.url} target="_blank" rel="noreferrer" className="result-link">
+                        🔗 {r.url.split('linkedin.com/in/')[1] || r.url}
+                      </a>
+                    ) : (
+                      <span className="result-link" style={{ color: 'var(--text-muted)' }}>{r.url}</span>
+                    )}
+                  </div>
+                  
+                  <div className="badge">
+                    <div className={`dot dot-${r.confidence.toLowerCase()}`}></div>
+                    {r.confidence}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </main>
     </div>
