@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { openRouterKeyManager } from '@/lib/keyManager';
+import { keyManager, ApiKey } from '@/lib/keyManager';
 
 export async function POST(req: Request) {
   try {
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ result: 'NOT FOUND (No search results)', confidence: 'LOW' });
     }
 
-    // Step 2: OpenRouter Verification
+    // Step 2: AI Verification
     const snippets = results.map((r: any, idx: number) => `Result ${idx + 1}:\nURL: ${r.url}\nTitle: ${r.title}\nDescription: ${r.description}`).join('\n\n');
     
     const prompt = `You are a strict data verification AI.
@@ -53,34 +53,83 @@ Analyze the search results. If one of them confidently matches the Target Lead O
 If the results are generic employees, unrelated people, or directory sites, return "NOT FOUND".
 Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUND".`;
 
-    const openRouterKey = openRouterKeyManager.getNextKey();
-    
-    const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openRouterKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-free', // We can adjust the exact free model
-        messages: [{ role: 'user', content: prompt }],
-      })
-    });
+    // Step 3: Greedy Retry Loop
+    const totalKeys = keyManager.getTotalKeys();
+    let finalResult = null;
+    let lastError = null;
 
-    if (!orRes.ok) {
-      console.error('OpenRouter API Error:', await orRes.text());
-      return NextResponse.json({ error: 'OpenRouter API failed' }, { status: 500 });
+    // We will attempt up to the total number of keys we have.
+    for (let i = 0; i < totalKeys; i++) {
+      const currentKey = keyManager.getNextKey();
+      
+      try {
+        if (currentKey.provider === 'openrouter') {
+          finalResult = await callOpenRouter(prompt, currentKey.key);
+        } else if (currentKey.provider === 'gemini') {
+          finalResult = await callGemini(prompt, currentKey.key);
+        }
+
+        // If we get here, the call succeeded! Break out of the retry loop.
+        if (finalResult) break;
+      } catch (err: any) {
+        console.warn(`[Key Failed] Provider: ${currentKey.provider} | Reason: ${err.message}. Retrying...`);
+        lastError = err.message;
+        // Continue to the next iteration to try the next key
+      }
     }
 
-    const orData = await orRes.json();
-    const verifiedUrl = orData.choices[0]?.message?.content?.trim() || 'NOT FOUND';
+    if (!finalResult) {
+      console.error('All keys in the pool failed. Last Error:', lastError);
+      return NextResponse.json({ error: 'All AI APIs failed' }, { status: 500 });
+    }
 
-    const finalResult = verifiedUrl.includes('NOT FOUND') ? 'NOT FOUND' : verifiedUrl;
-    const confidence = finalResult === 'NOT FOUND' ? 'LOW' : 'HIGH';
+    const resultText = finalResult.trim();
+    const isNotFound = resultText.includes('NOT FOUND');
+    const confidence = isNotFound ? 'LOW' : 'HIGH';
 
-    return NextResponse.json({ result: finalResult, confidence });
+    return NextResponse.json({ result: isNotFound ? 'NOT FOUND' : resultText, confidence });
+
   } catch (error: any) {
     console.error('API Route Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+// --- Helper Functions for API Providers ---
+
+async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash-free', // Free tier model
+      messages: [{ role: 'user', content: prompt }],
+    })
+  });
+
+  if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}`);
+  const data = await res.json();
+  return data.choices[0]?.message?.content || 'NOT FOUND';
+}
+
+async function callGemini(prompt: string, apiKey: string): Promise<string> {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.1,
+      }
+    })
+  });
+
+  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
+  const data = await res.json();
+  return data.candidates[0]?.content?.parts[0]?.text || 'NOT FOUND';
 }

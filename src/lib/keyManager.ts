@@ -1,5 +1,12 @@
-export class KeyManager {
-  private keys: string[] = [];
+export type ApiProvider = 'openrouter' | 'gemini';
+
+export interface ApiKey {
+  provider: ApiProvider;
+  key: string;
+}
+
+export class UniversalKeyManager {
+  private keys: ApiKey[] = [];
   private currentIndex: number = 0;
 
   constructor() {
@@ -7,26 +14,38 @@ export class KeyManager {
   }
 
   private loadKeys() {
-    // Collect any environment variables starting with OPENROUTER_KEY_
-    this.keys = Object.keys(process.env)
-      .filter((key) => key.startsWith("OPENROUTER_KEY_"))
-      .map((key) => process.env[key] as string)
-      .filter((val) => val && val.trim().length > 0);
-      
-    // Fallback to OPENROUTER_API_KEY if no specific numbered keys exist
-    if (this.keys.length === 0 && process.env.OPENROUTER_API_KEY) {
-      this.keys.push(process.env.OPENROUTER_API_KEY);
+    const openRouterKeys: ApiKey[] = [];
+    const geminiKeys: ApiKey[] = [];
+
+    // Parse all environment variables
+    for (const [envKey, envValue] of Object.entries(process.env)) {
+      if (!envValue || envValue.trim() === '') continue;
+
+      if (envKey.startsWith('OPENROUTER_')) {
+        openRouterKeys.push({ provider: 'openrouter', key: envValue });
+      } else if (envKey.startsWith('GEMINI_API_KEY')) {
+        geminiKeys.push({ provider: 'gemini', key: envValue });
+      }
     }
+
+    // Combine them, prioritizing OpenRouter first
+    this.keys = [...openRouterKeys, ...geminiKeys];
   }
 
-  public getNextKey(): string {
+  public getNextKey(): ApiKey {
     if (this.keys.length === 0) {
-      throw new Error("No OpenRouter API keys configured. Please add OPENROUTER_KEY_1 to your environment.");
+      throw new Error("No API keys configured. Please add OPENROUTER_API_KEY or GEMINI_API_KEY to your environment.");
     }
-    const key = this.keys[this.currentIndex];
+    
+    const current = this.keys[this.currentIndex];
     this.currentIndex = (this.currentIndex + 1) % this.keys.length;
-    return key;
+    return current;
+  }
+
+  // Allow the route to know how many keys we have for the retry loop
+  public getTotalKeys(): number {
+    return this.keys.length;
   }
 }
 
-export const openRouterKeyManager = new KeyManager();
+export const keyManager = new UniversalKeyManager();
