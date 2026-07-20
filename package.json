@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
+    "autoprefixer": "^10.5.4",
     "next": "16.2.10",
     "postcss": "^8.5.20",
     "react": "19.2.4",
