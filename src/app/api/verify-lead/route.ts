@@ -64,8 +64,6 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
       try {
         if (currentKey.provider === 'openrouter') {
           finalResult = await callOpenRouter(prompt, currentKey.key);
-        } else if (currentKey.provider === 'gemini') {
-          finalResult = await callGemini(prompt, currentKey.key);
         }
 
         // If we get here, the call succeeded! Break out of the retry loop.
@@ -104,9 +102,17 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://stein1.0',
+      'X-Title': 'Stein 1.0',
     },
     body: JSON.stringify({
-      model: 'google/gemini-1.5-flash', // More stable model for OpenRouter
+      // OpenRouter will automatically fall back in order if a model fails
+      models: [
+        'google/gemini-2.0-flash-lite-preview-02-05:free',
+        'google/gemini-1.5-flash',
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'google/gemini-pro'
+      ],
       messages: [{ role: 'user', content: prompt }],
     })
   });
@@ -114,23 +120,4 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
   if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices[0]?.message?.content || 'NOT FOUND';
-}
-
-async function callGemini(prompt: string, apiKey: string): Promise<string> {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.1,
-      }
-    })
-  });
-
-  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return data.candidates[0]?.content?.parts[0]?.text || 'NOT FOUND';
 }

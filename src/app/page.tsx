@@ -49,13 +49,41 @@ const VizIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SendIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+  </svg>
+);
+
+const SunIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+  </svg>
+);
+
+const MoonIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+  </svg>
+);
+
 export default function SteinInterface() {
   const [model, setModel] = useState<string>('Stein 1.0');
   const [input, setInput] = useState('');
   const [results, setResults] = useState<LeadResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  };
 
   // List of models for the dropdown
   const models = ['Stein 1.0', 'Sonnet 4.6', 'Pro 5.1'];
@@ -109,7 +137,16 @@ export default function SteinInterface() {
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50 text-gray-900 dark:bg-zinc-950 dark:text-gray-100 antialiased">
         
         {/* Main centered tagline area */}
-        <div className="text-center mb-8 w-full max-w-4xl transition-all duration-700 ease-in-out" style={{ transform: results.length > 0 ? 'translateY(-20px)' : 'none' }}>
+        <div className="text-center mb-8 w-full max-w-4xl transition-all duration-700 ease-in-out relative" style={{ transform: results.length > 0 ? 'translateY(-20px)' : 'none' }}>
+          
+          <button 
+            onClick={toggleTheme}
+            className="absolute -top-6 right-0 p-2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+          </button>
+
           <h1 className="text-4xl md:text-5xl font-extralight tracking-tight text-gray-950 dark:text-white" style={{ fontFamily: "'Instrument Serif', serif" }}>
             <span className="mr-2 text-rose-500 font-bold">*</span>
             I am ready to hunt.
@@ -186,7 +223,7 @@ export default function SteinInterface() {
                   </div>
               </div>
 
-              {/* Right group: Mic and Viz icons */}
+              {/* Right group: Mic, Viz, and Send icons */}
               <div className="flex items-center gap-4 text-gray-400 dark:text-zinc-500">
                 <button
                   type="button"
@@ -201,6 +238,19 @@ export default function SteinInterface() {
                   aria-label="Visualize audio"
                 >
                   <VizIcon className="w-7 h-7" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleProcess}
+                  disabled={isProcessing || !input.trim()}
+                  className={`flex items-center justify-center p-2 rounded-xl transition-all ${
+                    input.trim() && !isProcessing 
+                      ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-md' 
+                      : 'bg-gray-100 text-gray-300 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
+                  }`}
+                  aria-label="Send targets"
+                >
+                  <SendIcon className="w-5 h-5" />
                 </button>
               </div>
 

@@ -1,4 +1,4 @@
-export type ApiProvider = 'openrouter' | 'gemini';
+export type ApiProvider = 'openrouter';
 
 export interface ApiKey {
   provider: ApiProvider;
@@ -15,26 +15,22 @@ export class UniversalKeyManager {
 
   private loadKeys() {
     const openRouterKeys: ApiKey[] = [];
-    const geminiKeys: ApiKey[] = [];
 
-    // Parse all environment variables
+    // Parse all environment variables for OpenRouter keys
     for (const [envKey, envValue] of Object.entries(process.env)) {
       if (!envValue || envValue.trim() === '') continue;
 
       if (envKey.startsWith('OPENROUTER_')) {
         openRouterKeys.push({ provider: 'openrouter', key: envValue });
-      } else if (envKey.startsWith('GEMINI_API_KEY')) {
-        geminiKeys.push({ provider: 'gemini', key: envValue });
       }
     }
 
-    // Combine them, prioritizing OpenRouter first
-    this.keys = [...openRouterKeys, ...geminiKeys];
+    this.keys = openRouterKeys;
   }
 
   public getNextKey(): ApiKey {
     if (this.keys.length === 0) {
-      throw new Error("No API keys configured. Please add OPENROUTER_API_KEY or GEMINI_API_KEY to your environment.");
+      throw new Error("No API keys configured. Please add OPENROUTER_API_KEY to your environment.");
     }
     
     const current = this.keys[this.currentIndex];
