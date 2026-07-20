@@ -106,8 +106,8 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
       'X-Title': 'Stein 1.0',
     },
     body: JSON.stringify({
-      // Explicitly specifying a highly capable free model from the live OpenRouter API list
-      model: 'google/gemma-4-31b-it:free',
+      // Use environment variable for dynamic configuration, default to Gemini 1.5 Flash
+      model: process.env.OPENROUTER_MODEL || 'google/gemini-1.5-flash',
       messages: [{ role: 'user', content: prompt }],
     })
   });
