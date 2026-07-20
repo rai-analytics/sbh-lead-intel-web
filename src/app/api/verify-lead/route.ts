@@ -64,6 +64,8 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
       try {
         if (currentKey.provider === 'openrouter') {
           finalResult = await callOpenRouter(prompt, currentKey.key);
+        } else if (currentKey.provider === 'gemini') {
+          finalResult = await callGemini(prompt, currentKey.key);
         }
 
         // If we get here, the call succeeded! Break out of the retry loop.
@@ -115,4 +117,23 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
   if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices[0]?.message?.content || 'NOT FOUND';
+}
+
+async function callGemini(prompt: string, apiKey: string): Promise<string> {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.1,
+      }
+    })
+  });
+
+  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  return data.candidates[0]?.content?.parts[0]?.text || 'NOT FOUND';
 }
