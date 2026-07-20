@@ -37,24 +37,27 @@ export async function POST(req: Request) {
     }
 
     const snippets = results.map((r: {url: string; title: string; description: string}, idx: number) => `Result ${idx + 1}:\nURL: ${r.url}\nTitle: ${r.title}\nDescription: ${r.description}`).join('\n\n');
-    
-const prompt = `You are a data verification AI.
-Your goal is to find the exact LinkedIn Profile URL for the target lead, or a senior leader (Founder/Owner/CEO/Director) if the specific lead is unknown.
 
-Target Lead: ${leadName || '(Unknown)'}
-Target Company: ${company || '(Unknown)'}
-Target Location: ${location || '(Unknown)'}
+    const prompt = `
+You are an expert lead researcher. We are trying to find the exact LinkedIn profile for a specific business leader.
 
-Here are the top 5 search results from Brave Search:
+TARGET PERSON:
+First Name: ${leadName || "Unknown"}
+Company/Brand: ${company || "Unknown"}
+Location: ${location || "Unknown"}
+
+SEARCH RESULTS:
 ${snippets}
 
-Analyze the search results. 
-1. If the Target Lead is provided, find the profile that matches their name and company.
-2. If the Target Lead is (Unknown), find the profile of the Founder, Owner, CEO, Director, or Co-Founder of the Target Company.
+TASK:
+Read the search results carefully. Which of these LinkedIn profiles belongs to the Founder, CEO, or actual target person for this specific company?
+Beware of results for unrelated companies that just happen to share a keyword.
 
-If you confidently find a match based on the rules above, return exactly that LinkedIn URL.
-If the results are generic employees, unrelated people, or directory sites, return "NOT FOUND".
-Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUND".`;
+You must return a raw JSON object with two fields:
+- "url": the exact LinkedIn URL you picked (or an empty string "" if none of them match the target company).
+- "confidence": "HIGH" (if you are certain it's the right person at the right company), or "LOW" (if it's a guess or no brand was provided).
+
+Output ONLY raw JSON. No markdown formatting, no backticks.`;
 
     // Step 3: Greedy Retry Loop
     const totalKeys = keyManager.getTotalKeys();
@@ -85,11 +88,33 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
       return NextResponse.json({ error: `All AI APIs failed. Last error: ${lastError}` }, { status: 500 });
     }
 
-    const resultText = finalResult.trim();
-    const isNotFound = resultText.includes('NOT FOUND');
-    const confidence = isNotFound ? 'LOW' : 'HIGH';
+    const resultText = finalResult.trim().replace(/```json/g, '').replace(/```/g, '').trim();
+    let isNotFound = true;
+    let extractedUrl = 'NOT FOUND';
+    let confidence = 'LOW';
+    
+    try {
+      const parsed = JSON.parse(resultText);
+      if (parsed.url && parsed.url !== "") {
+        extractedUrl = parsed.url;
+        isNotFound = false;
+      }
+      if (parsed.confidence) {
+        confidence = parsed.confidence;
+      }
+    } catch (e) {
+      console.error('Failed to parse Gemini JSON:', resultText);
+      // Fallback if parsing fails but a URL was returned
+      if (resultText.includes('linkedin.com/in/')) {
+        const urlMatch = resultText.match(/https:\/\/[\w]+\.linkedin\.com\/in\/[^\s"']+/);
+        if (urlMatch) {
+          extractedUrl = urlMatch[0];
+          isNotFound = false;
+        }
+      }
+    }
 
-    return NextResponse.json({ result: isNotFound ? 'NOT FOUND' : resultText, confidence });
+    return NextResponse.json({ result: isNotFound ? 'NOT FOUND' : extractedUrl, confidence });
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -109,6 +134,7 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
+        responseMimeType: 'application/json',
         temperature: 0.1,
       }
     })
@@ -116,5 +142,5 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
 
   if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  return data.candidates[0]?.content?.parts[0]?.text || 'NOT FOUND';
+  return data.candidates[0]?.content?.parts[0]?.text || '{"url": "", "confidence": "LOW"}';
 }
