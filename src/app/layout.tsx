@@ -1,18 +1,21 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "I am ready to hunt.",
-  description: "Lead Intelligence Agent",
+  title: "Stein 1.0",
+  description: "Ready to Hunt",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  // Manual test: change 'light' to 'dark' here to toggle theme
+  const currentTheme = 'dark'; 
+
   return (
-    <html lang="en">
+    <html lang="en" className={currentTheme}>
       <body>{children}</body>
     </html>
   );
