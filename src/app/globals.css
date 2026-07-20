@@ -3,81 +3,78 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --panel-bg: #f5f5f5;
-  --border: #e0e0e0;
-  --accent: #000000;
-  --accent-foreground: #ffffff;
-  --muted: #666666;
+  --bg-color: #ffffff;
+  --text-color: #1a1a1a;
+  --panel-bg: #ffffff;
+  --border-color: #e5e5e5;
+  --placeholder-color: #737373;
+  --shadow-color: rgba(0, 0, 0, 0.05);
 }
 
 .dark {
-  --background: #18181b; /* Deep matte gray, like Claude/Gemini */
-  --foreground: #e4e4e7;
-  --panel-bg: #27272a;   /* Input box color */
-  --border: #3f3f46;
-  --accent: #ffffff;
-  --accent-foreground: #000000;
-  --muted: #a1a1aa;
+  --bg-color: #242424;
+  --text-color: #ececec;
+  --panel-bg: #2f2f2f;
+  --border-color: #3f3f3f;
+  --placeholder-color: #8a8a8a;
+  --shadow-color: rgba(0, 0, 0, 0.2);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  font-family: var(--font-inter), -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
   min-height: 100vh;
+  margin: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* Clever Serif Greeting */
-.clever-greeting {
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+.serif-heading {
+  font-family: var(--font-newsreader), ui-serif, Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.02em;
 }
 
-/* Minimalist Input Box */
-.minimal-input {
-  background: var(--panel-bg);
-  border: 1px solid transparent;
-  border-radius: 24px;
+.claude-input-container {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px var(--shadow-color);
   transition: all 0.2s ease;
+  padding: 14px 16px;
 }
 
-.minimal-input:focus-within {
-  border-color: var(--border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.claude-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-color);
+  resize: none;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 0;
+  min-height: 24px;
 }
 
-.dark .minimal-input:focus-within {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+.claude-textarea::placeholder {
+  color: var(--placeholder-color);
 }
 
-/* Subtle Spinner (Replacing the giant scanner) */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
 }
-
-.subtle-spinner {
-  animation: spin-slow 2s linear infinite;
-  opacity: 0.7;
-}
-
-/* Scrollbar styling for input area */
-textarea::-webkit-scrollbar {
-  width: 8px;
-}
-textarea::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
-textarea::-webkit-scrollbar-thumb {
-  background: var(--border);
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
   border-radius: 4px;
 }
-textarea::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--placeholder-color);
 }
