@@ -90,9 +90,10 @@ export default function SteinInterface() {
         setResults(prev => prev.map(r => 
           r.id === i ? { ...r, url: data.result || data.error || 'Error', confidence: data.confidence || 'LOW' } : r
         ));
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'API Error';
         setResults(prev => prev.map(r => 
-          r.id === i ? { ...r, url: err.message || 'API Error', confidence: 'LOW' } : r
+          r.id === i ? { ...r, url: message, confidence: 'LOW' } : r
         ));
       }
     }
@@ -229,7 +230,7 @@ export default function SteinInterface() {
                   ) : (
                     <div className="flex items-center gap-3 w-full">
                       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${result.confidence === 'HIGH' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                      <a href={result.url.startsWith('http') ? result.url : '#'} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline truncate">
+                      <a href={result.url.startsWith('http') ? result.url : '#'} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline truncate">
                         {result.url}
                       </a>
                     </div>
