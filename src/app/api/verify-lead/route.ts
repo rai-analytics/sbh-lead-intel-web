@@ -106,7 +106,7 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-exp:free', // Corrected Free tier model for OpenRouter
+      model: 'google/gemini-1.5-flash', // More stable model for OpenRouter
       messages: [{ role: 'user', content: prompt }],
     })
   });
@@ -117,7 +117,7 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
 }
 
 async function callGemini(prompt: string, apiKey: string): Promise<string> {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
