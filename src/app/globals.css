@@ -1,49 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-color: #ffffff;
-  --text-color: #1a1a1a;
+  /* Warm "Paper" Light Mode - Authentic Claude */
+  --bg-color: #f8f7f5;
+  --text-color: #23221f;
   --panel-bg: #ffffff;
-  --border-color: #e5e5e5;
-  --placeholder-color: #737373;
-  --shadow-color: rgba(0, 0, 0, 0.05);
+  --border-color: #e8e6e1;
+  --placeholder-color: #8e8c87;
+  --shadow-color: rgba(0, 0, 0, 0.04);
 }
 
 .dark {
-  --bg-color: #242424;
-  --text-color: #ececec;
-  --panel-bg: #2f2f2f;
-  --border-color: #3f3f3f;
-  --placeholder-color: #8a8a8a;
-  --shadow-color: rgba(0, 0, 0, 0.2);
+  /* Warm Charcoal Dark Mode - Authentic Claude */
+  --bg-color: #21201d;
+  --text-color: #ecebec;
+  --panel-bg: #2d2c29;
+  --border-color: #3b3a36;
+  --placeholder-color: #8a8884;
+  --shadow-color: rgba(0, 0, 0, 0.15);
 }
 
 body {
   color: var(--text-color);
   background-color: var(--bg-color);
-  font-family: var(--font-inter), -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
   min-height: 100vh;
   margin: 0;
   display: flex;
   flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .serif-heading {
-  font-family: var(--font-newsreader), ui-serif, Georgia, serif;
+  font-family: 'Instrument Serif', ui-serif, Georgia, serif;
   font-weight: 400;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.01em;
 }
 
 .claude-input-container {
   background-color: var(--panel-bg);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 4px 12px var(--shadow-color);
+  border-radius: 18px;
+  box-shadow: 0 8px 30px var(--shadow-color);
   transition: all 0.2s ease;
-  padding: 14px 16px;
+  padding: 16px 20px;
 }
 
 .claude-textarea {
@@ -53,7 +59,7 @@ body {
   outline: none;
   color: var(--text-color);
   resize: none;
-  font-family: var(--font-inter), sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   line-height: 1.5;
   padding: 0;
@@ -62,6 +68,7 @@ body {
 
 .claude-textarea::placeholder {
   color: var(--placeholder-color);
+  font-weight: 400;
 }
 
 /* Scrollbar */
