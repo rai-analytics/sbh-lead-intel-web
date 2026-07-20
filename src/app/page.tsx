@@ -14,7 +14,38 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [results, setResults] = useState<LeadResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [placeholder, setPlaceholder] = useState('');
+  const [showHowTo, setShowHowTo] = useState(false);
+  const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const fullPlaceholder = "Paste a target lead here (e.g. Wallmantra, New Delhi)...";
+
+  useEffect(() => {
+    let currentText = '';
+    let currentIndex = 0;
+    
+    const startDelay = setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (currentIndex < fullPlaceholder.length) {
+          currentText += fullPlaceholder[currentIndex];
+          setPlaceholder(currentText);
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          // After it finishes typing, wait 2 seconds, then transition to button
+          setTimeout(() => {
+            setPlaceholder("Paste targets here...");
+            setShowHowTo(true);
+          }, 2000);
+        }
+      }, 40);
+      
+      return () => clearInterval(typingInterval);
+    }, 500);
+    
+    return () => clearTimeout(startDelay);
+  }, []);
 
   useEffect(() => {
     // Check system preference or default to dark
@@ -114,19 +145,31 @@ export default function Home() {
       <div className={`w-full max-w-[760px] flex flex-col items-center transition-all duration-700 ease-in-out ${results.length > 0 ? '-translate-y-20' : ''}`}>
         
         {/* Exact Claude Heading */}
-        <h1 className="serif-heading text-[40px] text-center mb-10 flex items-center justify-center gap-3">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#d97757]">
-            <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9M8 8l8 8M8 16l8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          Coffee and Claude time?
-        </h1>
+        <div className="w-full relative">
+          <h1 className="serif-heading text-[40px] text-center mb-10 flex items-center justify-center gap-3">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#d97757]">
+              <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9M8 8l8 8M8 16l8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            I am ready to hunt.
+          </h1>
+
+          {showHowTo && (
+            <button 
+              onClick={() => setIsHowToModalOpen(true)}
+              className="absolute right-0 bottom-full mb-4 animate-fade-in flex items-center gap-2 text-sm text-[var(--placeholder-color)] hover:text-[var(--text-color)] transition-colors px-3 py-1.5 rounded-full border border-[var(--border-color)] bg-[var(--panel-bg)] hover:bg-[var(--border-color)]"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              How to use Stein 1.0
+            </button>
+          )}
+        </div>
 
         {/* Exact Claude Input Box */}
         <div className="w-full claude-input-container">
           <textarea
             ref={textareaRef}
             className="claude-textarea"
-            placeholder="How can I help you today?"
+            placeholder={placeholder}
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
@@ -143,7 +186,7 @@ export default function Home() {
             {/* Right Controls */}
             <div className="flex items-center gap-4 text-sm">
               <button className="flex items-center gap-1 hover:text-[var(--text-color)] transition-colors font-medium">
-                Sonnet 4.6 Max
+                Stein 1.0
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m6 9 6 6 6-6" />
                 </svg>
@@ -197,6 +240,33 @@ export default function Home() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* How To Use Modal */}
+      {isHowToModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsHowToModalOpen(false)}>
+          <div className="bg-[var(--bg-color)] border border-[var(--border-color)] p-8 rounded-2xl max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="serif-heading text-2xl mb-4 text-[var(--text-color)]">Using Stein 1.0</h2>
+            <div className="text-[var(--placeholder-color)] space-y-4 text-sm leading-relaxed">
+              <p>
+                <strong>1. Paste your leads:</strong> You can paste single leads or a massive list. 
+                Format them like "Company Name, Location" for best results.
+              </p>
+              <p>
+                <strong>2. Initiate Hunt:</strong> Press Enter. Stein 1.0 will instantly trigger multi-node cognitive analysis.
+              </p>
+              <p>
+                <strong>3. Review & Export:</strong> verified LinkedIn URLs will populate below. Click Export CSV when you're done.
+              </p>
+            </div>
+            <button 
+              onClick={() => setIsHowToModalOpen(false)}
+              className="mt-8 w-full bg-[var(--text-color)] text-[var(--bg-color)] font-medium py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              Got it
+            </button>
+          </div>
         </div>
       )}
 
