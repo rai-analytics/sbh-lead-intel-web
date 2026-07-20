@@ -145,24 +145,15 @@ export default function Home() {
       <div className={`w-full max-w-[760px] flex flex-col items-center transition-all duration-700 ease-in-out ${results.length > 0 ? '-translate-y-20' : ''}`}>
         
         {/* Exact Claude Heading */}
-        <div className="w-full relative">
-          <h1 className="serif-heading text-[40px] text-center mb-10 flex items-center justify-center gap-3">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#d97757]">
-              <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9M8 8l8 8M8 16l8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            I am ready to hunt.
-          </h1>
-
-          {showHowTo && (
-            <button 
-              onClick={() => setIsHowToModalOpen(true)}
-              className="absolute right-0 bottom-full mb-4 animate-fade-in flex items-center gap-2 text-sm text-[var(--placeholder-color)] hover:text-[var(--text-color)] transition-colors px-3 py-1.5 rounded-full border border-[var(--border-color)] bg-[var(--panel-bg)] hover:bg-[var(--border-color)]"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              How to use Stein 1.0
-            </button>
-          )}
-        </div>
+        <h1 className="serif-heading text-[32px] sm:text-[40px] text-center mb-10 flex items-center justify-center gap-3 w-full">
+          {/* Authentic Claude Asterisk (Filled, properly scaled) */}
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#d97757] flex-shrink-0">
+            <path d="M17 0C17.5523 0 18 0.447715 18 1V16H33C33.5523 16 34 16.4477 34 17C34 17.5523 33.5523 18 33 18H18V33C18 33.5523 17.5523 34 17 34C16.4477 34 16 33.5523 16 33V18H1C0.447715 18 0 17.5523 0 17C0 16.4477 0.447715 16 1 16H16V1C16 0.447715 16.4477 0 17 0Z" fill="currentColor"/>
+            <path d="M24.8995 9.10051C25.29 8.70998 25.9234 8.70998 26.3139 9.10051L26.6675 9.45406C27.058 9.84458 27.058 10.478 26.6675 10.8685L18.4142 19.1218L9.10051 28.4355C8.70998 28.8261 8.07656 28.8261 7.68604 28.4355L7.33249 28.082C6.94196 27.6915 6.94196 27.058 7.33249 26.6675L16.6462 17.3538L24.8995 9.10051Z" fill="currentColor"/>
+            <path d="M24.8995 24.8995C25.29 25.29 25.29 25.9234 24.8995 26.3139L24.5459 26.6675C24.1554 27.058 23.522 27.058 23.1315 26.6675L14.8782 18.4142L5.56447 9.10051C5.17394 8.70998 5.17394 8.07656 5.56447 7.68604L5.91802 7.33249C6.30854 6.94196 6.94196 6.94196 7.33249 7.33249L16.6462 16.6462L24.8995 24.8995Z" fill="currentColor"/>
+          </svg>
+          <span className="text-[var(--text-color)] font-medium tracking-tight">I am ready to hunt.</span>
+        </h1>
 
         {/* Exact Claude Input Box */}
         <div className="w-full claude-input-container">
@@ -176,15 +167,28 @@ export default function Home() {
           />
           
           <div className="flex items-center justify-between mt-8 text-[var(--placeholder-color)]">
-            {/* Plus Icon */}
-            <button className="p-1.5 hover:bg-[var(--border-color)] rounded-md transition-colors">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Plus Icon */}
+              <button className="p-1.5 hover:bg-[var(--border-color)] rounded-md transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
+              
+              {/* How To Use Button moved into controls for cleanliness */}
+              {showHowTo && (
+                <button 
+                  onClick={() => setIsHowToModalOpen(true)}
+                  className="animate-fade-in flex items-center gap-1.5 text-xs sm:text-sm font-medium hover:text-[var(--text-color)] transition-colors px-2 py-1 rounded-md"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  How to use
+                </button>
+              )}
+            </div>
 
             {/* Right Controls */}
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-3 sm:gap-4 text-sm">
               <button className="flex items-center gap-1 hover:text-[var(--text-color)] transition-colors font-medium">
                 Stein 1.0
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
