@@ -97,7 +97,7 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
 // --- Helper Functions for API Providers ---
 
 async function callGemini(prompt: string, apiKey: string): Promise<string> {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
