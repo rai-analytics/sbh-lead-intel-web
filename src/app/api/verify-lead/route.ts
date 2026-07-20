@@ -38,8 +38,8 @@ export async function POST(req: Request) {
 
     const snippets = results.map((r: {url: string; title: string; description: string}, idx: number) => `Result ${idx + 1}:\nURL: ${r.url}\nTitle: ${r.title}\nDescription: ${r.description}`).join('\n\n');
     
-    const prompt = `You are a strict data verification AI.
-Your goal is to find the exact LinkedIn Profile URL for the Founder/Owner/CEO or a specific person.
+const prompt = `You are a data verification AI.
+Your goal is to find the exact LinkedIn Profile URL for the target lead, or a senior leader (Founder/Owner/CEO/Director) if the specific lead is unknown.
 
 Target Lead: ${leadName || '(Unknown)'}
 Target Company: ${company || '(Unknown)'}
@@ -48,7 +48,11 @@ Target Location: ${location || '(Unknown)'}
 Here are the top 5 search results from Brave Search:
 ${snippets}
 
-Analyze the search results. If one of them confidently matches the Target Lead OR is the founder/owner of the Target Company, return exactly that URL. 
+Analyze the search results. 
+1. If the Target Lead is provided, find the profile that matches their name and company.
+2. If the Target Lead is (Unknown), find the profile of the Founder, Owner, CEO, Director, or Co-Founder of the Target Company.
+
+If you confidently find a match based on the rules above, return exactly that LinkedIn URL.
 If the results are generic employees, unrelated people, or directory sites, return "NOT FOUND".
 Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUND".`;
 
