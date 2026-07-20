@@ -106,13 +106,8 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
       'X-Title': 'Stein 1.0',
     },
     body: JSON.stringify({
-      // OpenRouter will automatically fall back in order if a model fails
-      models: [
-        'google/gemini-2.0-flash-lite-preview-02-05:free',
-        'google/gemini-1.5-flash',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'google/gemini-pro'
-      ],
+      // Auto-routes to the best available free model
+      model: 'openrouter/free',
       messages: [{ role: 'user', content: prompt }],
     })
   });
