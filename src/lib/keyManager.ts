@@ -1,4 +1,4 @@
-export type ApiProvider = 'openrouter' | 'gemini';
+export type ApiProvider = 'gemini';
 
 export interface ApiKey {
   provider: ApiProvider;
@@ -16,13 +16,11 @@ export class UniversalKeyManager {
   private loadKeys() {
     const loadedKeys: ApiKey[] = [];
 
-    // Parse all environment variables for OpenRouter and Gemini keys
+    // Parse all environment variables for Gemini keys
     for (const [envKey, envValue] of Object.entries(process.env)) {
       if (!envValue || envValue.trim() === '') continue;
 
-      if (envKey.startsWith('OPENROUTER_')) {
-        loadedKeys.push({ provider: 'openrouter', key: envValue });
-      } else if (envKey.startsWith('GEMINI_')) {
+      if (envKey.startsWith('GEMINI_')) {
         loadedKeys.push({ provider: 'gemini', key: envValue });
       }
     }

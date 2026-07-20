@@ -62,9 +62,7 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
       const currentKey = keyManager.getNextKey();
       
       try {
-        if (currentKey.provider === 'openrouter') {
-          finalResult = await callOpenRouter(prompt, currentKey.key);
-        } else if (currentKey.provider === 'gemini') {
+        if (currentKey.provider === 'gemini') {
           finalResult = await callGemini(prompt, currentKey.key);
         }
 
@@ -97,27 +95,6 @@ Do not hallucinate. Do not return anything other than the exact URL or "NOT FOUN
 }
 
 // --- Helper Functions for API Providers ---
-
-async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://stein1.0',
-      'X-Title': 'Stein 1.0',
-    },
-    body: JSON.stringify({
-      // Use environment variable for dynamic configuration, default to Gemini 1.5 Flash
-      model: process.env.OPENROUTER_MODEL || 'google/gemini-1.5-flash',
-      messages: [{ role: 'user', content: prompt }],
-    })
-  });
-
-  if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return data.choices[0]?.message?.content || 'NOT FOUND';
-}
 
 async function callGemini(prompt: string, apiKey: string): Promise<string> {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
