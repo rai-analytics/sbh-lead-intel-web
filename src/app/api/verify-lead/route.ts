@@ -106,8 +106,8 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string> {
       'X-Title': 'Stein 1.0',
     },
     body: JSON.stringify({
-      // Explicitly specifying a highly capable free model to prevent OpenRouter from routing to a Content-Safety classification model
-      model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
+      // Explicitly specifying a highly capable free model from the live OpenRouter API list
+      model: 'google/gemma-4-31b-it:free',
       messages: [{ role: 'user', content: prompt }],
     })
   });
